@@ -113,15 +113,19 @@
             // 切换图片和按钮文字
             if (clickCount === 1) {
                 image.src = imagePaths.step1;
+                console.log(`Switched to step1: ${imagePaths.step1}`);
                 btn1.textContent = '你认真的吗？';
-            } else if (clickCount == 2) {
+            } else if (clickCount === 2) {
                 image.src = imagePaths.step2;
+                console.log(`Switched to step2: ${imagePaths.step2}`);
                 btn1.textContent = '要再想想...';
-            } else if (clickCount == 3) {
+            } else if (clickCount === 3) {
                 image.src = imagePaths.step3;
+                console.log(`Switched to step3: ${imagePaths.step3}`);
                 btn1.textContent = '不许点这个！';
-            } else if (clickCount == 4) {
+            } else if (clickCount === 4) {
                 image.src = imagePaths.step4;
+                console.log(`Switched to step4: ${imagePaths.step4}`);
                 btn1.textContent = '拒绝的话猪猪会很伤心的';
             }
 
@@ -132,6 +136,7 @@
 
         btn2.addEventListener('click', () => {
             image.src = imagePaths.final;
+            console.log(`Switched to final: ${imagePaths.final}`);
         });
     </script>
 </body>
