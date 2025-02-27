@@ -89,18 +89,6 @@
         const btn2 = document.getElementById('btn2');
         const image = document.getElementById('currentImage');
 
-        // 预加载图片
-        function preloadImages(imagePaths) {
-            const images = Object.values(imagePaths);
-            images.forEach(src => {
-                const img = new Image();
-                img.src = src;
-            });
-        }
-
-        // 调用预加载函数
-        preloadImages(imagePaths);
-
         btn1.addEventListener('click', () => {
             clickCount++;
 
@@ -110,7 +98,7 @@
                 btn1.textContent = '你认真的吗？';
             } else if (clickCount == 2) {
                 image.src = imagePaths.step2;
-                btn1.textContent = '要再想想...';
+                btn1.textContent = '要不再想想...';
             } else if (clickCount == 3) {
                 image.src = imagePaths.step3;
                 btn1.textContent = '不许点这个！';
