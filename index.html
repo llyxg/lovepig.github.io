@@ -1,10 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <!-- 添加视口设置 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        * {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
         .container {
             position: relative;
-            height: 100vh;
+            min-height: 100vh;
         }
 
         #currentImage {
@@ -12,20 +20,22 @@
             left: 50%;
             top: 25%;
             transform: translate(-50%, -50%);
-            max-width: 90%; /* 调整这个值来控制图片的最大宽度 */
-            max-height: 90%; /* 调整这个值来控制图片的最大高度 */
+            max-width: 90%;
+            max-height: 60vh;  /* 调整图片显示区域 */
             transition: 0.3s;
-            width: auto; /* 调整这个值来控制图片的宽度 */
-            height: auto; /* 保持图片的宽高比 */
+            width: auto;
+            height: auto;
+            z-index: 1;
         }
 
         .buttons {
             position: fixed;
-            bottom: 400px;
+            bottom: 50px;  /* 调整按钮位置 */
             width: 100%;
             display: flex;
             justify-content: center;
-            gap: 180px; /* 控制按钮之间的间距 */
+            gap: 20px;  /* 缩小按钮间距 */
+            z-index: 100;  /* 确保按钮在顶层 */
         }
 
         button {
@@ -35,31 +45,39 @@
             cursor: pointer;
             transition: 0.3s;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), -2px -2px 5px rgba(255, 255, 255, 0.7);
-            color: black; /* 设置默认按钮文字颜色为黑色 */
+            color: black;
         }
 
         #btn1 {
             background: linear-gradient(145deg, #87cefa, #66b3ff);
-            width: 300px;
-            height: 150px;
-            font-size: 30px;
-            color: black; /* 设置默认按钮文字颜色为黑色 */
+            width: 150px;  /* 调整按钮尺寸 */
+            height: 80px;
+            font-size: 20px;  /* 调整字体大小 */
         }
 
         #btn2 {
             background: linear-gradient(145deg, #ffb6c1, #ff99a5);
-            transform: scale(1);
-            width: 150px;
-            height: 150px;
-            font-size: 30px;
-            color: black; /* 设置默认按钮文字颜色为黑色 */
+            width: 150px;  /* 调整按钮尺寸 */
+            height: 80px;
+            font-size: 20px;  /* 调整字体大小 */
         }
 
-        /* 鼠标悬停时的动画效果 */
         button:hover {
             box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3), inset -2px -2px 5px rgba(255, 255, 255, 0.7);
         }
 
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .buttons {
+                gap: 10px;
+                bottom: 20px;
+            }
+            button {
+                width: 120px;
+                height: 60px;
+                font-size: 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -72,49 +90,89 @@
     </div>
 
     <script>
-        // 从Flask获取图片路径
-        const imagePaths = {
-            initial: "img1.jpg",
-            step1: "img2.jpg",
-            step2: "img3.jpg",
-            step3: "img4.jpg",
-            step4: "img5.jpg",
-            final: "img6.jpg"
-        };
+    // 图片路径配置
+    const imagePaths = {
+        initial: "img1.jpg",
+        step1: "img2.jpg",
+        step2: "img3.jpg",
+        step3: "img4.jpg",
+        step4: "img5.jpg",
+        final: "img6.jpg"
+    };
 
-        let clickCount = 0;
-        let currentScale = 1;
+    // 图片预加载功能
+    (function preloadImages() {
+        const imageExtensions = [".jpg", ".webp", ".avif"]; // 支持的后备格式
+        Object.values(imagePaths).forEach(basePath => {
+            // 移除文件扩展名
+            const baseName = basePath.replace(/.[^/.]+$/, "");
+            
+            // 创建不同格式的图片对象进行预加载
+            imageExtensions.forEach(ext => {
+                const img = new Image();
+                img.src = `${baseName}${ext}`;
+            });
+        });
+    })();
 
-        const btn1 = document.getElementById('btn1');
-        const btn2 = document.getElementById('btn2');
-        const image = document.getElementById('currentImage');
+    let clickCount = 0;
+    let currentScale = 1;
 
-        btn1.addEventListener('click', () => {
-            clickCount++;
+    const btn1 = document.getElementById('btn1');
+    const btn2 = document.getElementById('btn2');
+    const image = document.getElementById('currentImage');
 
-            // 切换图片和按钮文字
-            if (clickCount === 1) {
-                image.src = imagePaths.step1;
-                btn1.textContent = '你认真的吗？';
-            } else if (clickCount == 2) {
-                image.src = imagePaths.step2;
-                btn1.textContent = '要不再想想...';
-            } else if (clickCount == 3) {
-                image.src = imagePaths.step3;
-                btn1.textContent = '不许点这个！';
-            } else if (clickCount == 4) {
-                image.src = imagePaths.step4;
-                btn1.textContent = '拒绝的话猪猪会很伤心的';
+    // 优化后的图片切换函数
+    function switchImage(path) {
+        // 优先尝试现代图片格式
+        const formats = [".webp", ".avif", ".jpg"];
+        const testImage = new Image();
+        
+        const tryFormat = (index) => {
+            if (index >= formats.length) return;
+            
+            testImage.src = path.replace(/.[^/.]+$/, "") + formats[index];
+            testImage.onload = () => {
+                image.src = testImage.src;
             }
+            testImage.onerror = () => tryFormat(index + 1);
+        }
+        
+        tryFormat(0);
+    }
 
-            // 放大button2
-            currentScale += 0.3;
-            btn2.style.transform = `scale(${currentScale})`;
-        });
+    btn1.addEventListener('click', () => {
+        clickCount++;
+        let targetImage;
+        
+        if (clickCount === 1) {
+            targetImage = imagePaths.step1;
+            btn1.textContent = '你认真的吗？';
+        } else if (clickCount === 2) {
+            targetImage = imagePaths.step2;
+            btn1.textContent = '要不再想想...';
+        } else if (clickCount === 3) {
+            targetImage = imagePaths.step3;
+            btn1.textContent = '不许点这个！';
+        } else if (clickCount === 4) {
+            targetImage = imagePaths.step4;
+            btn1.textContent = '拒绝的话猪猪会很伤心的';
+        }
 
-        btn2.addEventListener('click', () => {
-            image.src = imagePaths.final;
-        });
-    </script>
+        if (targetImage) {
+            switchImage(targetImage);
+        }
+
+        currentScale += 0.3;
+        btn2.style.transform = `scale(${currentScale})`;
+    });
+
+    btn2.addEventListener('click', () => {
+        switchImage(imagePaths.final);
+    });
+
+    // 初始加载优化
+    switchImage(imagePaths.initial);
+</script>
 </body>
 </html>
