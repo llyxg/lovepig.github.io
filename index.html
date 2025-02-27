@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <!-- 添加视口设置 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-        * {
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
+        /* 新增触摸反馈样式 */
+        button:active {
+            transform: scale(0.95);
+            filter: brightness(0.9);
         }
-        
+
         .container {
             position: relative;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden; /* 防止滚动干扰 */
         }
 
         #currentImage {
@@ -21,61 +21,41 @@
             top: 25%;
             transform: translate(-50%, -50%);
             max-width: 90%;
-            max-height: 60vh;  /* 调整图片显示区域 */
-            transition: 0.3s;
-            width: auto;
-            height: auto;
-            z-index: 1;
+            max-height: 50vh; /* 给按钮留出更多空间 */
+            z-index: 1; /* 确保图片在按钮下方 */
         }
 
         .buttons {
             position: fixed;
-            bottom: 50px;  /* 调整按钮位置 */
+            bottom: 20px;
             width: 100%;
             display: flex;
             justify-content: center;
-            gap: 20px;  /* 缩小按钮间距 */
-            z-index: 100;  /* 确保按钮在顶层 */
+            gap: 20px;
+            z-index: 100; /* 确保按钮在最顶层 */
+            padding: 0 10px; /* 防止内容溢出 */
         }
 
         button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), -2px -2px 5px rgba(255, 255, 255, 0.7);
-            color: black;
+            /* 移动端优化尺寸 */
+            width: 45vw;
+            height: 15vh;
+            font-size: 1.5rem;
+            /* 新增点击效果 */
+            transition: all 0.1s ease;
         }
 
-        #btn1 {
-            background: linear-gradient(145deg, #87cefa, #66b3ff);
-            width: 150px;  /* 调整按钮尺寸 */
-            height: 80px;
-            font-size: 20px;  /* 调整字体大小 */
-        }
-
-        #btn2 {
-            background: linear-gradient(145deg, #ffb6c1, #ff99a5);
-            width: 150px;  /* 调整按钮尺寸 */
-            height: 80px;
-            font-size: 20px;  /* 调整字体大小 */
-        }
-
-        button:hover {
-            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3), inset -2px -2px 5px rgba(255, 255, 255, 0.7);
-        }
-
-        /* 移动端适配 */
+        /* 移动端特定样式 */
         @media (max-width: 768px) {
             .buttons {
+                bottom: 10px;
                 gap: 10px;
-                bottom: 20px;
             }
+            
             button {
-                width: 120px;
-                height: 60px;
-                font-size: 16px;
+                width: 40vw;
+                height: 12vh;
+                font-size: 1.2rem;
             }
         }
     </style>
@@ -90,89 +70,78 @@
     </div>
 
     <script>
-    // 图片路径配置
-    const imagePaths = {
-        initial: "img1.jpg",
-        step1: "img2.jpg",
-        step2: "img3.jpg",
-        step3: "img4.jpg",
-        step4: "img5.jpg",
-        final: "img6.jpg"
-    };
-
-    // 图片预加载功能
-    (function preloadImages() {
-        const imageExtensions = [".jpg", ".webp", ".avif"]; // 支持的后备格式
-        Object.values(imagePaths).forEach(basePath => {
-            // 移除文件扩展名
-            const baseName = basePath.replace(/.[^/.]+$/, "");
-            
-            // 创建不同格式的图片对象进行预加载
-            imageExtensions.forEach(ext => {
+        // 图片预加载（带错误处理）
+        function preloadImages() {
+            Object.values(imagePaths).forEach(src => {
                 const img = new Image();
-                img.src = `${baseName}${ext}`;
+                img.src = src;
+                img.onerror = () => console.error('图片加载失败:', src);
             });
-        });
-    })();
+        }
 
-    let clickCount = 0;
-    let currentScale = 1;
+        const imagePaths = {
+            initial: "img1.jpg",
+            step1: "img2.jpg",
+            step2: "img3.jpg",
+            step3: "img4.jpg",
+            step4: "img5.jpg",
+            final: "img6.jpg"
+        };
 
-    const btn1 = document.getElementById('btn1');
-    const btn2 = document.getElementById('btn2');
-    const image = document.getElementById('currentImage');
+        // 初始化预加载
+        preloadImages();
 
-    // 优化后的图片切换函数
-    function switchImage(path) {
-        // 优先尝试现代图片格式
-        const formats = [".webp", ".avif", ".jpg"];
-        const testImage = new Image();
-        
-        const tryFormat = (index) => {
-            if (index >= formats.length) return;
-            
-            testImage.src = path.replace(/.[^/.]+$/, "") + formats[index];
-            testImage.onload = () => {
-                image.src = testImage.src;
+        let clickCount = 0;
+        let currentScale = 1;
+        const btn1 = document.getElementById('btn1');
+        const btn2 = document.getElementById('btn2');
+        const image = document.getElementById('currentImage');
+
+        // 通用事件处理器
+        function createHandler(fn) {
+            return function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fn();
             }
-            testImage.onerror = () => tryFormat(index + 1);
-        }
-        
-        tryFormat(0);
-    }
-
-    btn1.addEventListener('click', () => {
-        clickCount++;
-        let targetImage;
-        
-        if (clickCount === 1) {
-            targetImage = imagePaths.step1;
-            btn1.textContent = '你认真的吗？';
-        } else if (clickCount === 2) {
-            targetImage = imagePaths.step2;
-            btn1.textContent = '要不再想想...';
-        } else if (clickCount === 3) {
-            targetImage = imagePaths.step3;
-            btn1.textContent = '不许点这个！';
-        } else if (clickCount === 4) {
-            targetImage = imagePaths.step4;
-            btn1.textContent = '拒绝的话猪猪会很伤心的';
         }
 
-        if (targetImage) {
-            switchImage(targetImage);
-        }
+        // 按钮1功能
+        const handleBtn1 = () => {
+            clickCount++;
+            const stepMap = {
+                1: {img: imagePaths.step1, text: '你认真的吗？'},
+                2: {img: imagePaths.step2, text: '要不再想想...'},
+                3: {img: imagePaths.step3, text: '不许点这个！'},
+                4: {img: imagePaths.step4, text: '拒绝的话猪猪会很伤心的'}
+            };
 
-        currentScale += 0.3;
-        btn2.style.transform = `scale(${currentScale})`;
-    });
+            if (stepMap[clickCount]) {
+                image.src = stepMap[clickCount].img;
+                btn1.textContent = stepMap[clickCount].text;
+            }
 
-    btn2.addEventListener('click', () => {
-        switchImage(imagePaths.final);
-    });
+            currentScale += 0.3;
+            btn2.style.transform = `scale(${currentScale})`;
+        };
 
-    // 初始加载优化
-    switchImage(imagePaths.initial);
-</script>
+        // 按钮2功能
+        const handleBtn2 = () => {
+            image.src = imagePaths.final;
+        };
+
+        // 事件绑定（同时支持触摸和点击）
+        const bindEvents = (element, handler) => {
+            element.addEventListener('click', handler);
+            element.addEventListener('touchstart', createHandler(handler));
+            element.addEventListener('touchend', (e) => e.preventDefault());
+        };
+
+        bindEvents(btn1, handleBtn1);
+        bindEvents(btn2, handleBtn2);
+
+        // 初始化显示
+        image.src = imagePaths.initial;
+    </script>
 </body>
 </html>
