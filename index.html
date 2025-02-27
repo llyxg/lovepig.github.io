@@ -64,7 +64,10 @@
 </head>
 <body>
     <div class="container">
-        <img id="currentImage" src="img1.jpg">
+        <picture id="currentImage">
+            <source srcset="img1.webp" type="image/webp">
+            <img src="img1.jpg" alt="Current Image">
+        </picture>
         <div class="buttons">
             <button id="btn1">不要！</button>
             <button id="btn2">可以</button>
@@ -74,12 +77,12 @@
     <script>
         // 从Flask获取图片路径
         const imagePaths = {
-            initial: "img1.jpg",
-            step1: "img2.jpg",
-            step2: "img3.jpg",
-            step3: "img4.jpg",
-            step4: "img5.jpg",
-            final: "img6.jpg"
+            initial: { webp: "img1.webp", jpg: "img1.jpg" },
+            step1: { webp: "img2.webp", jpg: "img2.jpg" },
+            step2: { webp: "img3.webp", jpg: "img3.jpg" },
+            step3: { webp: "img4.webp", jpg: "img4.jpg" },
+            step4: { webp: "img5.webp", jpg: "img5.jpg" },
+            final: { webp: "img6.webp", jpg: "img6.jpg" }
         };
 
         let clickCount = 0;
@@ -87,23 +90,30 @@
 
         const btn1 = document.getElementById('btn1');
         const btn2 = document.getElementById('btn2');
-        const image = document.getElementById('currentImage');
+        const picture = document.getElementById('currentImage');
+
+        function updateImage(path) {
+            const source = picture.querySelector('source');
+            const img = picture.querySelector('img');
+            source.srcset = path.webp;
+            img.src = path.jpg;
+        }
 
         btn1.addEventListener('click', () => {
             clickCount++;
 
             // 切换图片和按钮文字
             if (clickCount === 1) {
-                image.src = imagePaths.step1;
+                updateImage(imagePaths.step1);
                 btn1.textContent = '你认真的吗？';
             } else if (clickCount == 2) {
-                image.src = imagePaths.step2;
+                updateImage(imagePaths.step2);
                 btn1.textContent = '要不再想想...';
             } else if (clickCount == 3) {
-                image.src = imagePaths.step3;
+                updateImage(imagePaths.step3);
                 btn1.textContent = '不许点这个！';
             } else if (clickCount == 4) {
-                image.src = imagePaths.step4;
+                updateImage(imagePaths.step4);
                 btn1.textContent = '拒绝的话猪猪会很伤心的';
             }
 
@@ -113,7 +123,7 @@
         });
 
         btn2.addEventListener('click', () => {
-            image.src = imagePaths.final;
+            updateImage(imagePaths.final);
         });
     </script>
 </body>
