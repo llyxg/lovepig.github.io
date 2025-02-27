@@ -1,40 +1,70 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <!-- 添加预加载 -->
-    <link rel="preload" href="img1.webp" as="image">
     <style>
-        /* 保持原有样式不变 */
         .container {
             position: relative;
             height: 100vh;
         }
+
         #currentImage {
             position: absolute;
             left: 50%;
             top: 25%;
             transform: translate(-50%, -50%);
-            max-width: 90%;
-            max-height: 90%;
+            max-width: 90%; /* 调整这个值来控制图片的最大宽度 */
+            max-height: 90%; /* 调整这个值来控制图片的最大高度 */
             transition: 0.3s;
-            width: auto;
-            height: auto;
+            width: auto; /* 调整这个值来控制图片的宽度 */
+            height: auto; /* 保持图片的宽高比 */
         }
-        /* 其他样式保持不变 */
+
+        .buttons {
+            position: fixed;
+            bottom: 400px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 180px; /* 控制按钮之间的间距 */
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), -2px -2px 5px rgba(255, 255, 255, 0.7);
+            color: black; /* 设置默认按钮文字颜色为黑色 */
+        }
+
+        #btn1 {
+            background: linear-gradient(145deg, #87cefa, #66b3ff);
+            width: 300px;
+            height: 150px;
+            font-size: 30px;
+            color: black; /* 设置默认按钮文字颜色为黑色 */
+        }
+
+        #btn2 {
+            background: linear-gradient(145deg, #ffb6c1, #ff99a5);
+            transform: scale(1);
+            width: 150px;
+            height: 150px;
+            font-size: 30px;
+            color: black; /* 设置默认按钮文字颜色为黑色 */
+        }
+
+        /* 鼠标悬停时的动画效果 */
+        button:hover {
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3), inset -2px -2px 5px rgba(255, 255, 255, 0.7);
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 修改图片标签为兼容模式 -->
-        <picture>
-            <source srcset="img1.webp" type="image/webp">
-            <img id="currentImage" 
-                 src="img1.jpg"
-                 width="800"    <!-- 添加实际显示尺寸 -->
-                 height="600" 
-                 loading="eager"
-                 alt="互动演示图片">
-        </picture>
+        <img id="currentImage" src="img1.jpg">
         <div class="buttons">
             <button id="btn1">不要！</button>
             <button id="btn2">可以</button>
@@ -42,21 +72,15 @@
     </div>
 
     <script>
-        // 修改为WebP路径（需准备对应的.webp文件）
+        // 从Flask获取图片路径
         const imagePaths = {
-            initial: "img1.webp",
-            step1: "img2.webp",
-            step2: "img3.webp",
-            step3: "img4.webp",
-            step4: "img5.webp",
-            final: "img6.webp"
+            initial: "img1.jpg",
+            step1: "img2.jpg",
+            step2: "img3.jpg",
+            step3: "img4.jpg",
+            step4: "img5.jpg",
+            final: "img6.jpg"
         };
-
-        // 添加WebP支持检测
-        const supportsWebP = (() => {
-            const elem = document.createElement('canvas');
-            return elem.toDataURL('image/webp').indexOf('data:image/webp') === 0;
-        })();
 
         let clickCount = 0;
         let currentScale = 1;
@@ -65,39 +89,43 @@
         const btn2 = document.getElementById('btn2');
         const image = document.getElementById('currentImage');
 
-        // 智能切换函数
-        const smartSwitch = (webpPath, jpgPath) => {
-            if (supportsWebP) {
-                image.src = webpPath;
-            } else {
-                image.src = jpgPath;
-            }
-        };
+        // 预加载图片
+        function preloadImages(imagePaths) {
+            const images = Object.values(imagePaths);
+            images.forEach(src => {
+                const img = new Image();
+                img.src = src;
+            });
+        }
+
+        // 调用预加载函数
+        preloadImages(imagePaths);
 
         btn1.addEventListener('click', () => {
             clickCount++;
-            
-            // 根据点击次数切换
-            const stepMap = [
-                { webp: imagePaths.step1, jpg: "img2.jpg", text: '你认真的吗？' },
-                { webp: imagePaths.step2, jpg: "img3.jpg", text: '要不再想想...' },
-                { webp: imagePaths.step3, jpg: "img4.jpg", text: '不许点这个！' },
-                { webp: imagePaths.step4, jpg: "img5.jpg", text: '拒绝的话猪猪会很伤心的' }
-            ];
 
-            if (clickCount <= 4) {
-                const currentStep = stepMap[clickCount - 1];
-                smartSwitch(currentStep.webp, currentStep.jpg);
-                btn1.textContent = currentStep.text;
-                
-                // 缩放效果保持
-                currentScale += 0.3;
-                btn2.style.transform = `scale(${currentScale})`;
+            // 切换图片和按钮文字
+            if (clickCount === 1) {
+                image.src = imagePaths.step1;
+                btn1.textContent = '你认真的吗？';
+            } else if (clickCount == 2) {
+                image.src = imagePaths.step2;
+                btn1.textContent = '要再想想...';
+            } else if (clickCount == 3) {
+                image.src = imagePaths.step3;
+                btn1.textContent = '不许点这个！';
+            } else if (clickCount == 4) {
+                image.src = imagePaths.step4;
+                btn1.textContent = '拒绝的话猪猪会很伤心的';
             }
+
+            // 放大button2
+            currentScale += 0.3;
+            btn2.style.transform = `scale(${currentScale})`;
         });
 
         btn2.addEventListener('click', () => {
-            smartSwitch(imagePaths.final, "img6.jpg");
+            image.src = imagePaths.final;
         });
     </script>
 </body>
