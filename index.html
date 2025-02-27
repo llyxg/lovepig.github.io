@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .container {
+            position: relative;
+            height: 100vh;
+        }
+
+        #currentImage {
+            position: absolute;
+            left: 50%;
+            top: 70%;
+            transform: translate(-50%, -50%);
+            max-width: 90%; /* 调整这个值来控制图片的最大宽度 */
+            max-height: 90%; /* 调整这个值来控制图片的最大高度 */
+            transition: 0.3s;
+            width: auto; /* 调整这个值来控制图片的宽度 */
+            height: auto; /* 保持图片的宽高比 */
+        }
+
+        .buttons {
+            position: fixed;
+            bottom: 500px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 180px; /* 控制按钮之间的间距 */
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        #btn1 {
+            background-color: #87cefa;
+            width: 300px;
+            height: 100px;
+            font-size: 30px;
+        }
+
+        #btn2 {
+            background-color: #ffb6c1;
+            transform: scale(1);
+            width: 100px;
+            height: 100px;
+            font-size: 30px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img id="currentImage" src="img1.jpg">
+        <div class="buttons">
+            <button id="btn1">不要！</button>
+            <button id="btn2">可以</button>
+        </div>
+    </div>
+
+    <script>
+        // 从Flask获取图片路径
+        const imagePaths = {
+            initial: "img1.jpg",
+            step1: "img2.jpg",
+            step2: "img3.jpg",
+            step3: "img4.jpg",
+            step4: "img5.jpg",
+            final: "img6.jpg"
+        };
+
+        let clickCount = 0;
+        let currentScale = 1;
+
+        const btn1 = document.getElementById('btn1');
+        const btn2 = document.getElementById('btn2');
+        const image = document.getElementById('currentImage');
+
+        btn1.addEventListener('click', () => {
+            clickCount++;
+
+            // 切换图片和按钮文字
+            if (clickCount === 1) {
+                image.src = imagePaths.step1;
+                btn1.textContent = '你认真的吗？';
+            } else if (clickCount == 2) {
+                image.src = imagePaths.step2;
+                btn1.textContent = '要不再想想...';
+            } else if (clickCount == 3) {
+                image.src = imagePaths.step3;
+                btn1.textContent = '不许点这个！';
+            } else if (clickCount == 4) {
+                image.src = imagePaths.step4;
+                btn1.textContent = '拒绝的话猪猪会很伤心的';
+            }
+
+            // 放大button2
+            currentScale += 0.3;
+            btn2.style.transform = `scale(${currentScale})`;
+        });
+
+        btn2.addEventListener('click', () => {
+            image.src = imagePaths.final;
+        });
+    </script>
+</body>
+</html>
